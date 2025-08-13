@@ -3,326 +3,389 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login & Register</title>
+    <title>Snake Game</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Press Start 2P', cursive;
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+            overflow: hidden; /* Prevent scrolling on mobile */
         }
-        /* Animated background styles */
-        .animated-bg {
-            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-            background-size: 400% 400%;
-            animation: gradient 15s ease infinite;
-            height: 100vh;
-            width: 100vw;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: -1;
+        canvas {
+            background-color: #000;
+            border: 4px solid #4a4a4a;
+            box-shadow: 0 0 20px rgba(0,255,0,0.3);
         }
-
-        @keyframes gradient {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-
-        /* Custom styles for form elements */
-        .form-container {
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .error-message {
-            color: #f87171; /* red-400 */
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
+        .game-container {
+            touch-action: none; /* Disable default touch actions like scroll/zoom */
         }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen bg-gray-900">
-    <div class="animated-bg"></div>
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
 
-    <div id="main-container" class="w-full max-w-md p-8 space-y-6 rounded-xl form-container shadow-lg">
+    <h1 class="text-4xl md:text-5xl text-green-400 mb-4 tracking-wider">SNAKE</h1>
 
-        <!-- Login Form -->
-        <div id="login-form">
-            <h1 class="text-3xl font-bold text-center text-white">Welcome Back!</h1>
-            <p class="text-center text-gray-200">Sign in to continue</p>
-            <form id="login" class="mt-8 space-y-6">
-                <div>
-                    <label for="login-name" class="sr-only">Name</label>
-                    <input id="login-name" name="name" type="text" required class="relative block w-full px-3 py-3 text-white bg-transparent border border-gray-300 rounded-md appearance-none placeholder:text-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Name">
-                    <p id="login-name-error" class="error-message hidden"></p>
-                </div>
-                <div>
-                    <label for="login-password" class="sr-only">Password</label>
-                    <input id="login-password" name="password" type="password" required class="relative block w-full px-3 py-3 text-white bg-transparent border border-gray-300 rounded-md appearance-none placeholder:text-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Password">
-                     <p id="login-password-error" class="error-message hidden"></p>
-                </div>
-
-                <div class="flex items-center justify-between">
-                    <div class="text-sm">
-                        <a href="#" id="forgot-password-link" class="font-medium text-indigo-300 hover:text-indigo-400">Forgot your password?</a>
-                    </div>
-                </div>
-
-                <div>
-                    <button type="submit" class="relative flex justify-center w-full px-4 py-3 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md group hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Sign in
-                    </button>
-                </div>
-            </form>
-            <p class="mt-6 text-sm text-center text-gray-300">
-                Not a member?
-                <a href="#" id="show-register" class="font-medium text-indigo-300 hover:text-indigo-400">Sign up now</a>
-            </p>
+    <div class="w-full max-w-lg md:max-w-2xl bg-[#2a2a2a] p-4 rounded-lg shadow-2xl border-2 border-gray-600">
+        <!-- Game Info Header -->
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-4 text-lg">
+            <div class="mb-2 sm:mb-0">
+                <span>SCORE: </span>
+                <span id="score" class="text-yellow-400">0</span>
+            </div>
+            <div class="flex items-center space-x-3">
+                <label for="snake-shape">Shape:</label>
+                <select id="snake-shape" class="bg-gray-700 text-white p-1 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400">
+                    <option value="square">Square</option>
+                    <option value="circle">Circle</option>
+                    <option value="triangle">Triangle</option>
+                </select>
+            </div>
         </div>
 
-        <!-- Registration Form -->
-        <div id="register-form" class="hidden">
-            <h1 class="text-3xl font-bold text-center text-white">Create Account</h1>
-            <p class="text-center text-gray-200">Get started with your new account</p>
-            <form id="register" class="mt-8 space-y-4">
-                <input id="register-name" name="name" type="text" placeholder="Name" class="relative block w-full px-3 py-3 text-white bg-transparent border border-gray-300 rounded-md appearance-none placeholder:text-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                <p id="register-name-error" class="error-message hidden"></p>
-
-                <input id="register-password" name="password" type="password" placeholder="Create Password" class="relative block w-full px-3 py-3 text-white bg-transparent border border-gray-300 rounded-md appearance-none placeholder:text-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                <p id="register-password-error" class="error-message hidden"></p>
-
-                <input id="register-phone" name="phone" type="tel" placeholder="Phone Number" class="relative block w-full px-3 py-3 text-white bg-transparent border border-gray-300 rounded-md appearance-none placeholder:text-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                <p id="register-phone-error" class="error-message hidden"></p>
-
-                <input id="register-email" name="email" type="email" placeholder="Email Address" class="relative block w-full px-3 py-3 text-white bg-transparent border border-gray-300 rounded-md appearance-none placeholder:text-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                <p id="register-email-error" class="error-message hidden"></p>
-
-                <input id="register-address" name="address" type="text" placeholder="Address" class="relative block w-full px-3 py-3 text-white bg-transparent border border-gray-300 rounded-md appearance-none placeholder:text-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                <p id="register-address-error" class="error-message hidden"></p>
-
-                <div>
-                    <button type="submit" class="relative flex justify-center w-full px-4 py-3 mt-4 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md group hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Sign up
-                    </button>
-                </div>
-            </form>
-            <p class="mt-6 text-sm text-center text-gray-300">
-                Already have an account?
-                <a href="#" id="show-login" class="font-medium text-indigo-300 hover:text-indigo-400">Sign in</a>
-            </p>
+        <!-- Game Canvas -->
+        <div class="relative game-container">
+            <canvas id="gameCanvas" class="w-full aspect-square rounded-md"></canvas>
+            <div id="gameOverScreen" class="absolute inset-0 bg-black bg-opacity-70 flex-col justify-center items-center text-center hidden">
+                <h2 class="text-4xl text-red-500 mb-4">GAME OVER</h2>
+                <p class="text-xl mb-6">Your Score: <span id="finalScore" class="text-yellow-400"></span></p>
+                <button id="restartButton" class="px-6 py-3 bg-green-500 text-black rounded-lg hover:bg-green-400 focus:outline-none focus:ring-2 focus:ring-green-300 text-lg">
+                    RESTART
+                </button>
+            </div>
+             <div id="startScreen" class="absolute inset-0 bg-black bg-opacity-70 flex flex-col justify-center items-center text-center">
+                <h2 class="text-3xl text-white mb-6">Ready to Play?</h2>
+                <button id="startButton" class="px-6 py-3 bg-green-500 text-black rounded-lg hover:bg-green-400 focus:outline-none focus:ring-2 focus:ring-green-300 text-lg">
+                    START GAME
+                </button>
+            </div>
         </div>
-        
-        <!-- Forgot Password Modal -->
-        <div id="forgot-password-modal" class="hidden">
-             <h1 class="text-3xl font-bold text-center text-white">Forgot Password</h1>
-             <p class="text-center text-gray-200">Enter your email to reset your password</p>
-             <form id="forgot-password-form" class="mt-8 space-y-6">
-                 <input id="forgot-email" name="email" type="email" required class="relative block w-full px-3 py-3 text-white bg-transparent border border-gray-300 rounded-md appearance-none placeholder:text-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Email Address">
-                 <p id="forgot-email-error" class="error-message hidden"></p>
-                 <div>
-                    <button type="submit" class="relative flex justify-center w-full px-4 py-3 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md group hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Send Reset Link
-                    </button>
-                </div>
-             </form>
-             <p class="mt-6 text-sm text-center text-gray-300">
-                Remembered your password?
-                <a href="#" id="back-to-login" class="font-medium text-indigo-300 hover:text-indigo-400">Back to Sign In</a>
-            </p>
-        </div>
+    </div>
 
-        <!-- Success Message Box -->
-        <div id="message-box" class="hidden p-4 mt-4 text-center text-white bg-green-500 rounded-md"></div>
-
+    <!-- Instructions -->
+    <div class="mt-6 text-center text-gray-400">
+        <p>Use <span class="text-yellow-400">ARROW KEYS</span> or <span class="text-yellow-400">SWIPE</span> to move.</p>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- DOM Elements ---
-            const loginFormContainer = document.getElementById('login-form');
-            const registerFormContainer = document.getElementById('register-form');
-            const forgotPasswordModal = document.getElementById('forgot-password-modal');
-            const messageBox = document.getElementById('message-box');
+        // --- DOM Elements ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const startScreen = document.getElementById('startScreen');
+        const finalScoreElement = document.getElementById('finalScore');
+        const startButton = document.getElementById('startButton');
+        const restartButton = document.getElementById('restartButton');
+        const shapeSelector = document.getElementById('snake-shape');
 
-            const showRegisterLink = document.getElementById('show-register');
-            const showLoginLink = document.getElementById('show-login');
-            const forgotPasswordLink = document.getElementById('forgot-password-link');
-            const backToLoginLink = document.getElementById('back-to-login');
+        // --- Game Configuration ---
+        const gridSize = 20; // Number of cells in width/height
+        let canvasSize = Math.min(window.innerWidth * 0.9, 600); // Responsive canvas size
+        canvas.width = canvasSize;
+        canvas.height = canvasSize;
+        let tileSize = canvas.width / gridSize;
+        
+        // --- Game State ---
+        let snake = [];
+        let food = {};
+        let score = 0;
+        let direction = 'right';
+        let changingDirection = false;
+        let gameRunning = false;
+        let gameLoop;
+        let snakeShape = 'square';
+        
+        // --- Touch Controls State ---
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
 
-            const loginForm = document.getElementById('login');
-            const registerForm = document.getElementById('register');
-            const forgotPasswordForm = document.getElementById('forgot-password-form');
-
-            // --- Toggling Functions ---
-            const showForm = (formToShow) => {
-                loginFormContainer.classList.add('hidden');
-                registerFormContainer.classList.add('hidden');
-                forgotPasswordModal.classList.add('hidden');
-                formToShow.classList.remove('hidden');
-            };
-
-            showRegisterLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                showForm(registerFormContainer);
-            });
-
-            showLoginLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                showForm(loginFormContainer);
-            });
+        // --- Game Setup and Initialization ---
+        
+        /**
+         * Resets the game to its initial state
+         */
+        function initializeGame() {
+            // Reset snake in the middle
+            snake = [{ x: 10, y: 10 }];
             
-            forgotPasswordLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                showForm(forgotPasswordModal);
-            });
+            // Reset direction and score
+            direction = 'right';
+            score = 0;
+            scoreElement.textContent = score;
 
-            backToLoginLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                showForm(loginFormContainer);
-            });
+            // Generate first food
+            generateFood();
 
-            // --- Validation and Message Functions ---
-            const showError = (inputId, message) => {
-                const errorElement = document.getElementById(`${inputId}-error`);
-                errorElement.textContent = message;
-                errorElement.classList.remove('hidden');
-                document.getElementById(inputId).classList.add('border-red-400');
-            };
+            // Hide overlays
+            gameOverScreen.classList.add('hidden');
+            gameOverScreen.classList.remove('flex');
+            startScreen.classList.add('hidden');
+            startScreen.classList.remove('flex');
+        }
+        
+        /**
+         * Starts the game loop.
+         */
+        function startGame() {
+            if (gameRunning) return;
+            gameRunning = true;
+            initializeGame();
+            // Using setInterval for a consistent game speed
+            gameLoop = setInterval(main, 100);
+        }
 
-            const clearError = (inputId) => {
-                const errorElement = document.getElementById(`${inputId}-error`);
-                errorElement.classList.add('hidden');
-                 document.getElementById(inputId).classList.remove('border-red-400');
-            };
+        /**
+         * The main game loop function that updates and draws the game.
+         */
+        function main() {
+            if (!gameRunning) return;
             
-            const clearAllErrors = (form) => {
-                const inputs = form.querySelectorAll('input');
-                inputs.forEach(input => clearError(input.id));
+            changingDirection = false; // Allow next direction change
+            clearCanvas();
+            moveSnake();
+            drawGameElements();
+            
+            if (hasGameEnded()) {
+                endGame();
             }
+        }
+        
+        /**
+         * Ends the game, stops the loop, and shows the game over screen.
+         */
+        function endGame() {
+            gameRunning = false;
+            clearInterval(gameLoop);
+            finalScoreElement.textContent = score;
+            gameOverScreen.classList.remove('hidden');
+            gameOverScreen.classList.add('flex');
+        }
 
-            const showMessage = (message, isSuccess = true) => {
-                messageBox.textContent = message;
-                messageBox.className = `p-4 mt-4 text-center text-white rounded-md ${isSuccess ? 'bg-green-500' : 'bg-red-500'}`;
-                messageBox.classList.remove('hidden');
-                setTimeout(() => {
-                    messageBox.classList.add('hidden');
-                }, 3000);
-            };
+        // --- Drawing Functions ---
+
+        /**
+         * Clears the entire canvas.
+         */
+        function clearCanvas() {
+            ctx.fillStyle = '#000'; // Black background
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        /**
+         * Draws all game elements: snake and food.
+         */
+        function drawGameElements() {
+            drawSnake();
+            drawFood();
+        }
+
+        /**
+         * Draws the snake on the canvas based on the selected shape.
+         */
+        function drawSnake() {
+            snakeShape = shapeSelector.value;
+            snake.forEach((segment, index) => {
+                // Head is brighter green, body is darker
+                ctx.fillStyle = index === 0 ? '#00ff00' : '#00a000';
+                
+                const x = segment.x * tileSize;
+                const y = segment.y * tileSize;
+
+                switch (snakeShape) {
+                    case 'circle':
+                        ctx.beginPath();
+                        ctx.arc(x + tileSize / 2, y + tileSize / 2, tileSize / 2, 0, 2 * Math.PI);
+                        ctx.fill();
+                        break;
+                    case 'triangle':
+                        ctx.beginPath();
+                        ctx.moveTo(x + tileSize / 2, y);
+                        ctx.lineTo(x, y + tileSize);
+                        ctx.lineTo(x + tileSize, y + tileSize);
+                        ctx.closePath();
+                        ctx.fill();
+                        break;
+                    case 'square':
+                    default:
+                        ctx.fillRect(x, y, tileSize, tileSize);
+                        break;
+                }
+            });
+        }
+
+        /**
+         * Draws the food on the canvas.
+         */
+        function drawFood() {
+            ctx.fillStyle = '#ff0000'; // Red food
+            ctx.strokeStyle = '#a00000';
+            ctx.lineWidth = 2;
+            ctx.fillRect(food.x * tileSize, food.y * tileSize, tileSize, tileSize);
+            ctx.strokeRect(food.x * tileSize, food.y * tileSize, tileSize, tileSize);
+        }
+
+        // --- Game Logic ---
+        
+        /**
+         * Updates the snake's position and handles food collision.
+         */
+        function moveSnake() {
+            const head = { x: snake[0].x, y: snake[0].y };
+
+            // Update head position based on direction
+            if (direction === 'up') head.y -= 1;
+            if (direction === 'down') head.y += 1;
+            if (direction === 'left') head.x -= 1;
+            if (direction === 'right') head.x += 1;
+
+            // Add new head to the front of the snake
+            snake.unshift(head);
             
-            const validateEmail = (email) => {
-                const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-                return re.test(String(email).toLowerCase());
+            // Check for food collision
+            const hasEatenFood = head.x === food.x && head.y === food.y;
+            if (hasEatenFood) {
+                score += 10;
+                scoreElement.textContent = score;
+                generateFood(); // Create new food
+            } else {
+                // If no food eaten, remove the tail
+                snake.pop();
             }
-
-            // --- Form Submit Handlers ---
-
-            // Login Form Submission
-            loginForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                clearAllErrors(loginForm);
-                let isValid = true;
-
-                const name = document.getElementById('login-name').value.trim();
-                const password = document.getElementById('login-password').value.trim();
-
-                if (name === '') {
-                    showError('login-name', 'Name is required.');
-                    isValid = false;
-                }
-                if (password === '') {
-                    showError('login-password', 'Password is required.');
-                    isValid = false;
-                }
-
-                if (isValid) {
-                    // In a real app, you would send this to a server
-                    console.log('Login attempt:', { name, password });
-                    showMessage('Login successful! Redirecting...');
-                    // Simulate redirect
-                    setTimeout(() => {
-                        loginForm.reset();
-                        // window.location.href = '/dashboard'; // Example redirect
-                    }, 1500);
-                }
-            });
-
-            // Registration Form Submission
-            registerForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                clearAllErrors(registerForm);
-                let isValid = true;
+        }
+        
+        /**
+         * Generates food at a random position, avoiding the snake's body.
+         */
+        function generateFood() {
+            let foodX, foodY;
+            while (true) {
+                foodX = Math.floor(Math.random() * gridSize);
+                foodY = Math.floor(Math.random() * gridSize);
                 
-                const name = document.getElementById('register-name').value.trim();
-                const password = document.getElementById('register-password').value.trim();
-                const phone = document.getElementById('register-phone').value.trim();
-                const email = document.getElementById('register-email').value.trim();
-                const address = document.getElementById('register-address').value.trim();
-
-                if (name === '') {
-                    showError('register-name', 'Name is required.');
-                    isValid = false;
-                }
-                if (password.length < 8) {
-                    showError('register-password', 'Password must be at least 8 characters.');
-                    isValid = false;
-                }
-                 if (!/^\d{10,11}$/.test(phone)) { // Simple validation for 10-11 digit phone numbers
-                    showError('register-phone', 'Please enter a valid phone number.');
-                    isValid = false;
-                }
-                if (!validateEmail(email)) {
-                    showError('register-email', 'Please enter a valid email address.');
-                    isValid = false;
-                }
-                if (address === '') {
-                    showError('register-address', 'Address is required.');
-                    isValid = false;
-                }
-
-                if(isValid) {
-                    // In a real app, you would send this to a server
-                    console.log('Registration data:', { name, password, phone, email, address });
-                    showMessage('Registration successful! Please sign in.');
-                    setTimeout(() => {
-                        registerForm.reset();
-                        showForm(loginFormContainer);
-                    }, 2000);
-                }
-            });
+                // Ensure food is not on the snake
+                let foodOnSnake = snake.some(segment => segment.x === foodX && segment.y === foodY);
+                if (!foodOnSnake) break;
+            }
+            food = { x: foodX, y: foodY };
+        }
+        
+        /**
+         * Checks for game-ending conditions (wall or self collision).
+         * @returns {boolean} True if the game has ended, false otherwise.
+         */
+        function hasGameEnded() {
+            const head = snake[0];
             
-            // Forgot Password Form Submission
-            forgotPasswordForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                clearAllErrors(forgotPasswordForm);
-                let isValid = true;
-                
-                const email = document.getElementById('forgot-email').value.trim();
-                
-                if (!validateEmail(email)) {
-                    showError('forgot-email', 'Please enter a valid email address.');
-                    isValid = false;
+            // Wall collision
+            if (head.x < 0 || head.x >= gridSize || head.y < 0 || head.y >= gridSize) {
+                return true;
+            }
+            
+            // Self collision (check if head hits any part of the body)
+            for (let i = 1; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    return true;
                 }
-                
-                if(isValid) {
-                    // In a real app, you would send a reset link
-                    console.log('Password reset request for:', email);
-                    showMessage('If an account with that email exists, a reset link has been sent.');
-                     setTimeout(() => {
-                        forgotPasswordForm.reset();
-                        showForm(loginFormContainer);
-                    }, 2500);
-                }
-            });
-        });
+            }
+            
+            return false;
+        }
+
+        // --- Event Handlers ---
+        
+        /**
+         * Handles keyboard input for changing snake direction.
+         * @param {KeyboardEvent} event The keyboard event.
+         */
+        function handleKeyDown(event) {
+            if (changingDirection) return;
+            changingDirection = true;
+            
+            const keyPressed = event.key;
+            const goingUp = direction === 'up';
+            const goingDown = direction === 'down';
+            const goingLeft = direction === 'left';
+            const goingRight = direction === 'right';
+
+            if ((keyPressed === 'ArrowUp' || keyPressed.toLowerCase() === 'w') && !goingDown) {
+                direction = 'up';
+            }
+            if ((keyPressed === 'ArrowDown' || keyPressed.toLowerCase() === 's') && !goingUp) {
+                direction = 'down';
+            }
+            if ((keyPressed === 'ArrowLeft' || keyPressed.toLowerCase() === 'a') && !goingRight) {
+                direction = 'left';
+            }
+            if ((keyPressed === 'ArrowRight' || keyPressed.toLowerCase() === 'd') && !goingLeft) {
+                direction = 'right';
+            }
+        }
+        
+        // --- Touch Control Handlers ---
+        function handleTouchStart(event) {
+            touchStartX = event.changedTouches[0].screenX;
+            touchStartY = event.changedTouches[0].screenY;
+        }
+        
+        function handleTouchEnd(event) {
+            touchEndX = event.changedTouches[0].screenX;
+            touchEndY = event.changedTouches[0].screenY;
+            handleSwipe();
+        }
+
+        function handleSwipe() {
+            const dx = touchEndX - touchStartX;
+            const dy = touchEndY - touchStartY;
+            const absDx = Math.abs(dx);
+            const absDy = Math.abs(dy);
+
+            if (changingDirection) return;
+            
+            // Check for horizontal vs vertical swipe
+            if (absDx > absDy) { // Horizontal swipe
+                if (dx > 0 && direction !== 'left') direction = 'right';
+                else if (dx < 0 && direction !== 'right') direction = 'left';
+            } else { // Vertical swipe
+                if (dy > 0 && direction !== 'up') direction = 'down';
+                else if (dy < 0 && direction !== 'down') direction = 'up';
+            }
+            changingDirection = true;
+        }
+
+
+        /**
+         * Resizes the canvas and recalculates tile sizes on window resize.
+         */
+        function handleResize() {
+            canvasSize = Math.min(window.innerWidth > 768 ? 600 : window.innerWidth * 0.9, 500);
+            canvas.width = canvasSize;
+            canvas.height = canvasSize;
+            tileSize = canvas.width / gridSize;
+            // Redraw immediately after resize
+            if (gameRunning) {
+                drawGameElements();
+            }
+        }
+        
+        // --- Event Listeners ---
+        document.addEventListener('keydown', handleKeyDown);
+        startButton.addEventListener('click', startGame);
+        restartButton.addEventListener('click', startGame);
+        window.addEventListener('resize', handleResize);
+        
+        // Touch Listeners
+        canvas.addEventListener('touchstart', handleTouchStart, false);
+        canvas.addEventListener('touchend', handleTouchEnd, false);
+
+        // --- Initial Call ---
+        // Draw initial state of the empty canvas
+        clearCanvas();
     </script>
 </body>
 </html>
